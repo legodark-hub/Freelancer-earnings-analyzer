@@ -1,0 +1,6 @@
+pandas
+typer
+langchain-openai
+langchain
+langchain-experimental
+langchain-core
