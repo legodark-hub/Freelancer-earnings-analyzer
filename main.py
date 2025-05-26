@@ -67,15 +67,18 @@ Your goal is to write Python code that directly answers the user's question usin
         name="python_repl",
         func=lambda code: PythonREPLTool().run(clean_python_code(code)),
         description=(
-            "A Python REPL. Use this to execute Python code to analyze the CSV file. "
-            f"The CSV is at '{config.CSV_PATH}'. Available columns: {', '.join(column_names)}. "
-            "Your input to this tool should be ONLY the Python code you want to execute. "
-            "For example, to count payment methods, your input might be: "
-            f"'import pandas as pd; df = pd.read_csv(\"{config.CSV_PATH}\"); print(df[\"Payment_Method\"].value_counts())'. "
-            "Do NOT write 'python_repl(...)' in your input. Just provide the Python code directly. "
-            "The code will be executed, and its print output (the result of the last expression or explicit print statements) will be returned. "
-            "Ensure your Python code loads the dataframe using pandas and references columns correctly from the list: "
-            f"{', '.join(column_names)}."
+            "Executes Python code to analyze data from a CSV file. "
+            "IMPORTANT: When you use this tool, your response MUST be formatted as follows: "
+            "Action: python_repl\n"
+            "Action Input: [your Python code as a single string here]\n"
+            "The Python code provided in 'Action Input' needs to: "
+            f"1. Import pandas: `import pandas as pd`. "
+            f'2. Load the dataframe: `df = pd.read_csv("{config.CSV_PATH}")`. '
+            f"3. Use only the available column names: {', '.join(column_names)}. "
+            "4. Perform the analysis and ensure the final result is printed (e.g., `print(df['some_column'].value_counts())`). "
+            "Example for 'Action Input': "
+            f'\'import pandas as pd; df = pd.read_csv("{config.CSV_PATH}"); print(df["Job_Category"].value_counts())\' '
+            "The tool will execute this code and return whatever is printed to standard output."
         ),
     )
 
