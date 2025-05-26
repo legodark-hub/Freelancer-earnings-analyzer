@@ -4,3 +4,4 @@ langchain-openai
 langchain
 langchain-experimental
 langchain-core
+langgraph
