@@ -34,6 +34,7 @@
 4.  **Configuration:**
     Необходимо создать .env файл в корне директории, который будет содержать:
     ```python
+    MODEL_NAME = "" (если используется локальная openaiAPI-совместимая модель, то значение не важно)
     LLM_API_KEY = "ключ api модели"
     LLM_BASE_URL = "url модели"
     CSV_PATH = "./freelancer_earnings_bd.csv"
