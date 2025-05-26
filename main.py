@@ -28,10 +28,27 @@ def query(
     """
     Отвечает на вопрос с помощью PythonREPLTool
     """
-    column_names = pd.read_csv(config.CSV_PATH, nrows=1).columns.tolist()
+    # Read the first 5 rows to get column names and example values
+    try:
+        df_sample = pd.read_csv(config.CSV_PATH, nrows=5)
+    except FileNotFoundError:
+        typer.echo(f"Error: The file {config.CSV_PATH} was not found.")
+        raise typer.Exit(code=1)
+    except pd.errors.EmptyDataError:
+        typer.echo(f"Error: The file {config.CSV_PATH} is empty.")
+        raise typer.Exit(code=1)
+
+    column_names = df_sample.columns.tolist()
+    column_examples_str = "\n".join(
+        [
+            f"- '{col}': (e.g., {', '.join(df_sample[col].dropna().unique()[:3].astype(str))})"
+            for col in column_names
+        ]
+    )
     system_message_content = f"""You are an assistant that helps answer questions based on data in a CSV file.
 The CSV file is located at: {config.CSV_PATH}.
-The available columns in this CSV file are: {", ".join(column_names)}.
+The available columns in this CSV file (with some example values) are:
+{column_examples_str}
 When generating Python code to analyze this data:
 1. You MUST use pandas to load and manipulate the data from '{config.CSV_PATH}'.
 2. You MUST ONLY use the column names from the provided list: {", ".join(column_names)}. Do not invent column names. If a column name has spaces or special characters, ensure it is correctly referenced in pandas (e.g., using df['Column Name']).
@@ -50,10 +67,15 @@ Your goal is to write Python code that directly answers the user's question usin
         name="python_repl",
         func=lambda code: PythonREPLTool().run(clean_python_code(code)),
         description=(
-            f"Use to perform aggregations and calculations on the CSV file located at '{config.CSV_PATH}' using pandas. "
-            f"Ensure your Python code ONLY uses the available column names: {', '.join(column_names)}. "
-            f"Load the dataframe directly from '{config.CSV_PATH}'. "
-            "The input to this tool must be raw Python code, not a markdown code block."
+            "A Python REPL. Use this to execute Python code to analyze the CSV file. "
+            f"The CSV is at '{config.CSV_PATH}'. Available columns: {', '.join(column_names)}. "
+            "Your input to this tool should be ONLY the Python code you want to execute. "
+            "For example, to count payment methods, your input might be: "
+            f"'import pandas as pd; df = pd.read_csv(\"{config.CSV_PATH}\"); print(df[\"Payment_Method\"].value_counts())'. "
+            "Do NOT write 'python_repl(...)' in your input. Just provide the Python code directly. "
+            "The code will be executed, and its print output (the result of the last expression or explicit print statements) will be returned. "
+            "Ensure your Python code loads the dataframe using pandas and references columns correctly from the list: "
+            f"{', '.join(column_names)}."
         ),
     )
 
