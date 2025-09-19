@@ -1,6 +1,5 @@
 import pandas as pd
 import typer
-import re # For regular expression operations
 from langchain_openai import ChatOpenAI
 from langchain_experimental.tools import PythonREPLTool
 from langgraph.graph import StateGraph, END
@@ -12,23 +11,6 @@ app = typer.Typer(
     help="CLI for querying freelancer earnings data using LLM and Python tooling"
 )
 
-
-def clean_python_code(code: str) -> str:
-    """
-    Извлекает Python код из первого блока ```python ... ``` в строке.
-    Убирает всё до "```python" включительно и всё после закрывающего "```" включительно.
-    Если блок не найден, возвращает пустую строку.
-    """
-    # Regex to find content within ```python ... ```
-    # It captures the content between "```python" (and any following whitespace)
-    # and the next "```" (and any preceding whitespace).
-    match = re.search(r"```python\s*([\s\S]*?)\s*```", code, re.DOTALL)
-    if match:
-        # Group 1 is the content between the markers
-        return match.group(1).strip()
-    else:
-        # If the specific ```python ... ``` block is not found, return an empty string.
-        return ""
 
 class GraphState(TypedDict):
     question: str
@@ -100,13 +82,13 @@ Provide only the Python code.
         try:
             llm_response = llm.invoke(prompt)
             raw_code = llm_response.content
-            cleaned_code = clean_python_code(raw_code)
-            if not cleaned_code:
+
+            if not raw_code:
                 return {
                     "generated_code": None,
                     "error_message": "LLM generated empty code.",
                 }
-            return {"generated_code": cleaned_code, "error_message": None}
+            return {"generated_code": raw_code, "error_message": None}
         except Exception as e:
             return {
                 "generated_code": None,
